@@ -1,0 +1,92 @@
+<!-- user login page -->
+
+{% extends 'shopbase.html' %}
+{% load static %}
+{% block body %}
+
+	<!-- Start Banner Area -->
+	<section class="banner-area organic-breadcrumb"  style="height: 233px;">
+		<div class="container">
+			<div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end" style="padding: 10px 0 30px 0;">
+				<div class="col-first">
+					<h1>Login/Register</h1>
+					<nav class="d-flex align-items-center">
+						<a href="index.html">Home<span class="lnr lnr-arrow-right"></span></a>
+						<a href="category.html">Login</a>
+					</nav>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!-- End Banner Area -->
+
+	<!--================Login Box Area =================-->
+	<section class="login_box_area section_gap " style="padding: 32px 0 56px 0;">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-6">
+					<div class="login_box_img">
+						<img class="img-fluid" src="{% static 'img/login.jpg' %}" alt="">
+						<div class="hover">
+							<h4>Already have an account?</h4>
+							
+							<a class="primary-btn" href="{% url 'userLogin' %}">Log in to your Account</a>
+						</div>
+					</div>
+				</div>
+				<div class="col-lg-6">
+					<div class="login_form_inner">
+						{% for message in messages %}
+                        <p class="alert alert-{{message.tags}}" >{{message}}</p>
+                    {% endfor %}
+                    <script>
+                        setTimeout(() => {
+                            $(".alert").alert("close");
+                        }, 10000)
+                    </script>
+						<h3>Create Account</h3>
+
+						<form class="row login_form" action="" method="post" id="contactForm" novalidate="novalidate">
+                            {% csrf_token %}
+							<div class="col-md-12 form-group ">
+                                <label for="username"><strong>Username</strong></label>
+								{{ form.username }}
+							</div>
+							<div class="col-md-12 form-group">
+                                <label for="email"><strong>Email</strong></label>
+
+                                {{ form.email }}
+							</div>
+                            <div class="col-md-12 form-group">
+                                <label for="password1"><strong>Password</strong></label>
+
+                                {{ form.password1 }}
+							</div>
+                            <div class="col-md-12 form-group">
+                                <label for="password2"><strong>Re-enter Password</strong></label>
+                                {{ form.password2 }}
+							</div>
+							<div class="col-md-12 form-group">
+                                <input class="primary-btn" type="submit" value="Create Account">
+								<!-- <button type="submit" value="Login" class="primary-btn">Log In</button> -->
+								
+							</div>
+						</form>
+						{% if form.errors %}
+                        <div class="alert alert-danger">
+                        {% for field_name, field_errors in form.errors.items %}
+                            <li>{{ field_errors|join:", " }}</li>
+                        {% endfor %}
+                        </div>
+                    {% endif %}
+
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<!--================End Login Box Area =================-->
+
+
+{% endblock body %}
+
