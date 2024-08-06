@@ -10,10 +10,11 @@ def send_otp(request):
     valid_date = datetime.now() + timedelta(minutes=1)
     request.session["otp_valid_date"] = str(valid_date)
 
-    # send via sms
-    user_email = "vyshnav.m345@gmail.com"
+    # send via email
+    user_email = request.session.get("email")
+    # user_email = "vyshnav.m345@gmail.com"
     subject = "Password Reset OTP"
-    message = f"Your OTP for password resetting is {otp}"
+    message = f"Your OTP for cybershopping is {otp}"
     send_email_to_client(subject, message, user_email)
     print(f"Your OTP is {otp}")
     return otp
