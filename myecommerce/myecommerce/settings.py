@@ -153,7 +153,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'cyber.shopping.project@gmail.com'
-EMAIL_HOST_PASSWORD = 'ymdm cgez watr lhil'
+EMAIL_HOST_PASSWORD = 'zmzt tzoy gdsl lftn'
 
 
 EMAIL_USE_SSL = False
