@@ -95,23 +95,25 @@ def home(request):
 def userLogin(request):
     if request.user.is_authenticated:
         return redirect("home")
+
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            request.session["username"] = username
-            request.session["email"] = user.email
-            print("the username is: ", request.session['username'])
-            print("the username is: ", request.session["email"])
-            request.session["is_user"] = True
-            request.session["otp_issued"] = False
-            return redirect("otp")
+            if user.status == "Active":
+                login(request, user)
+                return redirect("home")
+            else:
+                messages.error(request, "!!! You have been Blocked by the Admin !!!")
+                return redirect("userLogin")
         else:
             messages.info(request, "Username or Password Incorrect")
+
     context = {}
     return render(request, "shop_login.html", context)
+
 
 
 def userSignup(request):
@@ -139,123 +141,6 @@ def userSignup(request):
 
     context = {"form": form}
     return render(request, "shop_register.html", context)
-
-
-# @never_cache
-# def otpview(request):
-#     if request.user.is_authenticated:
-#         return redirect("home")
-#     context = {}
-#     if "otp_count" not in request.session:
-#         request.session["otp_count"] = 5
-
-#     if request.method == "POST":
-#         otp = request.POST["otp"].strip()
-#         print(otp)
-
-#         otp_secret_key = request.session["otp_secret_key"]
-#         otp_valid_date = request.session["otp_valid_date"]
-
-#         if otp_secret_key and otp_valid_date is not None:
-#             print("otp exists")
-#             valid_until = datetime.fromisoformat(otp_valid_date)
-
-#             if valid_until > datetime.now():
-#                 print("otp validity checking")
-#                 totp = pyotp.TOTP(otp_secret_key, interval=60)
-#                 if totp.verify(otp) or otp == "326598":
-#                     print("otp verified")
-#                     if request.session["is_user"] == True:
-#                         current_user = request.session["username"]
-#                         user = Custom_User.objects.get(username=current_user)
-#                         if user.status == "Active":
-#                             login(request, user)
-#                         else:
-#                             messages.error(
-#                                 request, "!!! You have been Blocked by the Admin !!!"
-#                             )
-#                             return redirect("userLogin")
-
-#                         del request.session["otp_secret_key"]
-#                         del request.session["otp_valid_date"]
-#                         del request.session["username"]
-#                         del request.session["otp_count"]
-#                         del request.session["otp_issued"]
-#                         wishlist_product_id = request.session.get("wishlist_product_id")
-#                         if wishlist_product_id:
-#                             # Remove the product ID from the session
-#                             del request.session["wishlist_product_id"]
-#                             # Redirect the user to the wishlist page with the product ID parameter
-#                             return redirect("add_to_wishlist", pk=wishlist_product_id)
-#                         return redirect("home")
-
-#                     else:
-#                         user_data = request.session["temp_user_data"]
-#                         form = CreateUserForm(
-#                             data=user_data
-#                         )  # Pass the user data to the form
-#                         if form.is_valid():
-#                             referal_id = request.session.get("ref_profile")
-#                             if referal_id is not None:
-#                                 recommended_by_profile = ReferenceProfile.objects.get(
-#                                     id=referal_id
-#                                 )
-#                                 instance = form.save()
-#                                 registered_user = Custom_User.objects.get(
-#                                     id=instance.id
-#                                 )
-#                                 registered_profile = ReferenceProfile.objects.get(
-#                                     user=registered_user
-#                                 )
-#                                 registered_profile.recommended_by = (
-#                                     recommended_by_profile.user
-#                                 )
-#                                 registered_profile.save()
-#                             else:
-#                                 form.save()
-#                             user = form.cleaned_data.get("username")
-#                             messages.success(request, "Account was created for " + user)
-#                             del request.session["otp_secret_key"]
-#                             del request.session["otp_valid_date"]
-#                             del request.session["temp_user_data"]
-#                             del request.session["otp_count"]
-#                             del request.session["otp_issued"]
-#                             return redirect("userLogin")
-#                         else:
-#                             # Form is not valid, render the sign-up page with error messages
-#                             context["form"] = form
-#                             messages.error(
-#                                 request, "Invalid form data. Please correct the errors."
-#                             )
-#                             return render(request, "signup.html", context)
-#                 else:
-#                     messages.info(request, "invalid OTP")
-#                     request.session["otp_issued"] = True
-#                     return redirect("otp")
-#             else:
-#                 messages.info(request, "OTP Expired")
-#         else:
-#             messages.info(request, "Something went wrong")
-#     if request.session["otp_issued"] == False:
-#         if request.session["otp_count"]:
-#             send_otp(request)
-#         else:
-#             messages.info(request, "exceeded resend otp count")
-
-#     return render(request, "shop_otp.html", context)
-
-
-# @never_cache
-# def resend_otp(request):
-#     request.session["otp_count"] -= 1
-#     request.session["otp_issued"] = False
-#     return redirect("otp")
-
-
-
-
-
-
 
 
 
@@ -1005,9 +890,6 @@ def add_images(request, pk):
         # Use the set() method to update the many-to-many relationship
         prod.subcategories.set(subcategories)
 
-        # if form(request).is_valid:
-        #     form.save()
-        #     print("Variant saved")
         for image in images:
             images = ProductImages.objects.create(
                 product=prod,
